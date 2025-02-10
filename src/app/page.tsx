@@ -1,8 +1,7 @@
 "use client";
 
-import { getAllUsers } from "@/api/fetch";
+import { getAllUsers } from "@/api/user.api";
 import { User } from "@/interfaces/user.interface";
-import axios from "axios";
 import { useEffect, useRef, useState } from "react";
 
 export default function Home() {
@@ -15,8 +14,9 @@ export default function Home() {
   const [allUsers, setAllUsers] = useState<User[]>([]);
 
   useEffect(() => {
-    getAllUsers.then((res) => {
-      setAllUsers(res.data);
+    getAllUsers.then(async (res) => {
+      const users = (await res.json()) as User[];
+      setAllUsers(users);
     });
   }, []);
 
