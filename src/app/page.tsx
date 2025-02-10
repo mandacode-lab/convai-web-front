@@ -1,6 +1,9 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { getAllUsers } from "@/api/fetch";
+import { User } from "@/interfaces/user.interface";
+import axios from "axios";
+import { useEffect, useRef, useState } from "react";
 
 export default function Home() {
   const [recording, setRecording] = useState(false);
@@ -8,6 +11,14 @@ export default function Home() {
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const responseAudioRef = useRef<HTMLAudioElement | null>(null);
+
+  const [allUsers, setAllUsers] = useState<User[]>([]);
+
+  useEffect(() => {
+    getAllUsers.then((res) => {
+      setAllUsers(res.data);
+    });
+  }, []);
 
   const startAudioRecording = async () => {
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -21,19 +32,19 @@ export default function Home() {
 
     mediaRecorder.onstop = async () => {
       const audioBlob = new Blob(audioChunksRef.current, {
-        type: "audio/wav",
+        type: "audio/ogg",
       });
       const audioUrl = URL.createObjectURL(audioBlob);
 
       // download audio
       const a = document.createElement("a");
       a.href = audioUrl;
-      a.download = "audio.wav";
+      a.download = "audio.ogg";
       a.click();
       a.remove();
 
       const formData = new FormData();
-      formData.append("file", audioBlob, "audio.wav");
+      formData.append("file", audioBlob, "audio.ogg");
 
       try {
         // response is audio data
@@ -75,6 +86,11 @@ export default function Home() {
 
   return (
     <div className="flex items-center justify-center min-h-screen">
+      {allUsers.map((user) => (
+        <div key={user.uuid} className="m-2">
+          <p>{user.uuid}</p>
+        </div>
+      ))}
       {responseAudioUrl && (
         <audio
           ref={responseAudioRef}
